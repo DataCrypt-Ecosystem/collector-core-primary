@@ -39,6 +39,11 @@ async def executar_carga_manual(anos: list[int], delay_segundos: float = 90.0, l
         periodos = [1, 2, 3, 4, 5, 6]
         
         for idx, ente in enumerate(codigos_ibge, start=1):
+            file_path = os.path.join(sync_service.silver_path, f"ano={ano}", f"rreo_{ente}.parquet")
+            if os.path.exists(file_path):
+                logger.info(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Arquivo já existe, pulando...")
+                continue
+
             logger.info(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Coletando bimestres...")
             
             try:

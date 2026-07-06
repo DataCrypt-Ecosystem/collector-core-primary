@@ -30,6 +30,7 @@ class SiconfiService:
                     await asyncio.sleep(2 ** attempt + 1)
                 else:
                     raise
+        return []
 
     async def get_entes(self) -> List[Dict[str, Any]]:
         return await self._request_with_retry(f"{self.BASE_URL}/entes")

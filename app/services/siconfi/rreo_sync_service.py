@@ -14,7 +14,7 @@ class RreoSyncService:
         self.silver_path = os.path.join(data_lake_root, "silver", "siconfi_rreo")
         self.gold_path = os.path.join(data_lake_root, "gold", "siconfi_macro")
 
-    async def extract_and_load_silver(self, entes_ibge: List[str], ano: int, periodos: List[int], delay_periodos: float = 10.0):
+    async def extract_and_load_silver(self, entes_ibge: List[str], ano: int, periodos: List[int], delay_periodos: float = 3.0):
         logger.info(f"Iniciando extração RREO {ano} para {len(entes_ibge)} entes...")
         all_data = []
         
@@ -32,8 +32,28 @@ class RreoSyncService:
                 except Exception as e:
                     logger.error(f"Erro ao coletar Ente {ente} ({ano}/{periodo}): {e}")
                     
+        partition_path = os.path.join(self.silver_path, f"ano={ano}")
+        os.makedirs(partition_path, exist_ok=True)
+        
+        ente_ref = entes_ibge[0] if entes_ibge else "lote"
+        file_path = os.path.join(partition_path, f"rreo_{ente_ref}.parquet")
+
+        def save_empty_parquet(motivo_msg):
+            logger.warning(f"{motivo_msg} Criando arquivo vazio para registrar processamento.")
+            df_empty = pd.DataFrame({
+                'periodo': pd.Series(dtype='int64'),
+                'cod_ibge': pd.Series(dtype='str'),
+                'uf': pd.Series(dtype='str'),
+                'instituicao': pd.Series(dtype='str'),
+                'anexo': pd.Series(dtype='str'),
+                'coluna': pd.Series(dtype='str'),
+                'conta': pd.Series(dtype='str'),
+                'valor': pd.Series(dtype='float64')
+            })
+            df_empty.to_parquet(file_path, engine='pyarrow', index=False)
+
         if not all_data:
-            logger.warning("Nenhum dado coletado.")
+            save_empty_parquet("Nenhum dado coletado.")
             return
 
         df = pd.DataFrame(all_data)
@@ -47,19 +67,11 @@ class RreoSyncService:
         df_clean = df_clean[df_clean['ano'] == ano].copy()
         
         if df_clean.empty:
-            logger.warning(f"A API não retornou dados válidos para o ano {ano}. Ignorando salvamento.")
+            save_empty_parquet(f"A API não retornou dados válidos para o ano {ano}.")
             return
 
         # Removemos a coluna ano pois ela será inferida pelo Hive Partitioning do DuckDB (nome da pasta)
         df_clean.drop(columns=['ano'], inplace=True)
-        
-        # Caminho explícito para a partição do ano
-        partition_path = os.path.join(self.silver_path, f"ano={ano}")
-        os.makedirs(partition_path, exist_ok=True)
-        
-        # Salva um arquivo determinístico por ente para evitar milhares de arquivos com UUID
-        ente_ref = entes_ibge[0] if entes_ibge else "lote"
-        file_path = os.path.join(partition_path, f"rreo_{ente_ref}.parquet")
         
         df_clean.to_parquet(
             file_path,

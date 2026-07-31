@@ -41,8 +41,17 @@ async def executar_carga_manual(anos: list[int], delay_segundos: float = 90.0, l
         for idx, ente in enumerate(codigos_ibge, start=1):
             file_path = os.path.join(sync_service.silver_path, f"ano={ano}", f"rreo_{ente}.parquet")
             if os.path.exists(file_path):
-                logger.info(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Arquivo já existe, pulando...")
-                continue
+                import pandas as pd
+                try:
+                    # Verifica se o arquivo existente está vazio (arquivos gerados por falha/sem dados)
+                    df_existente = pd.read_parquet(file_path)
+                    if df_existente.empty:
+                        logger.info(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Arquivo existe mas está VAZIO, tentando novamente...")
+                    else:
+                        logger.info(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Arquivo já existe com dados, pulando...")
+                        continue
+                except Exception as e:
+                    logger.warning(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Erro ao ler arquivo existente, tentando novamente: {e}")
 
             logger.info(f"[{idx}/{len(codigos_ibge)}] Ano: {ano} | IBGE: {ente} | Coletando bimestres...")
             

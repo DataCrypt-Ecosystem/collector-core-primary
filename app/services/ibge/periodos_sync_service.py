@@ -15,6 +15,9 @@ async def sync_periodos_pesquisa(db: Session, codigo_pesquisa: str, client: http
     try:
         response = await client.get(url)
         response.raise_for_status()
+        if not response.text.strip():
+            logger.debug(f"API returned empty body for research {codigo_pesquisa}.")
+            return 0
         data = response.json()
     except Exception as e:
         logger.warning(f"Failed to fetch periods for research {codigo_pesquisa}: {e}")

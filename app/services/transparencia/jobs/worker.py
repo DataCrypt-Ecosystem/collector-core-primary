@@ -52,14 +52,18 @@ async def run_worker_loop():
                 executed_any = True
                 logger.info(f"Executing {len(job_ids)} jobs concurrently: {job_ids}")
 
-                async def safe_run_job(job_id: int):
+                async def safe_run_job(job_id: int, delay_seconds: float):
+                    if delay_seconds > 0:
+                        logger.debug(f"Aguardando {delay_seconds}s para iniciar o job {job_id}...")
+                        await asyncio.sleep(delay_seconds)
                     try:
                         await run_job(job_id)
                         logger.info(f"Job {job_id} completed execution successfully.")
                     except Exception as exc:
                         logger.exception(f"Error executing job {job_id}: {exc}")
 
-                await asyncio.gather(*(safe_run_job(jid) for jid in job_ids))
+                # Aplica o intervalo de 5 segundos de forma escalonada entre os jobs
+                await asyncio.gather(*(safe_run_job(jid, i * 5.0) for i, jid in enumerate(job_ids)))
                 logger.info(f"Finished execution of batch. Waiting {WORKER_INTERVAL_SECONDS} seconds...")
             else:
                 logger.debug("No pending jobs found.")

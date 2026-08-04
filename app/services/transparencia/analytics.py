@@ -131,22 +131,22 @@ def get_municipio_kpis_beneficio(db: Session, tipo_beneficio: str, ano: int, uf:
     
     # 2. valor_medio_mensal_municipio
     if historico_list:
-        valor_medio_mensal_municipio = sum(item["valor"] for item in historico_list) / 12.0
+        valor_medio_mensal_municipio = sum(item["valor"] for item in historico_list) / len(historico_list)
     else:
         valor_medio_mensal_municipio = 0.0
 
     # 3. media_beneficiarios_municipio
     if historico_list:
-        media_beneficiarios_municipio = sum(item["quantidade_beneficiados"] for item in historico_list) / 12.0
+        media_beneficiarios_municipio = sum(item["quantidade_beneficiados"] for item in historico_list) / len(historico_list)
     else:
         media_beneficiarios_municipio = 0.0
 
-    # 4. taxa_variacao_beneficiarios_municipio (Variação mensal do último mês disponível)
+    # 4. taxa_variacao_beneficiarios_municipio (Variação da quantidade de beneficiários no decorrer do ano)
     if len(historico_list) >= 2:
         last_month = historico_list[-1]["quantidade_beneficiados"]
-        prev_month = historico_list[-2]["quantidade_beneficiados"]
-        if prev_month > 0:
-            taxa_variacao_beneficiarios_municipio = (last_month - prev_month) / prev_month
+        first_month = historico_list[0]["quantidade_beneficiados"]
+        if first_month > 0:
+            taxa_variacao_beneficiarios_municipio = (last_month - first_month) / first_month
         else:
             taxa_variacao_beneficiarios_municipio = 0.0
     else:

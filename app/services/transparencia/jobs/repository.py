@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import timezone, datetime
 from collections.abc import Mapping
 from typing import cast
 
@@ -15,7 +15,7 @@ from app.services.transparencia.jobs.definitions import (
 
 
 def utcnow() -> datetime:
-    return datetime.utcnow()
+    return datetime.now(timezone.utc)
 
 
 def get_job(db: Session, job_id: int) -> TransparenciaCargaJob | None:

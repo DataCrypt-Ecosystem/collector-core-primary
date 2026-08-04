@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import timezone, date, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
+
+def utcnow():
+    return datetime.now(timezone.utc)
 
 class Regiao(Base):
     __tablename__ = "dim_regioes"
@@ -58,7 +61,7 @@ class TransparenciaOrgaoSiafiRaw(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     pagina_origem: Mapped[int] = mapped_column(Integer, nullable=False)
     payload_original_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    collected_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    collected_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
 
 
 class TransparenciaOrgaoSiapeRaw(Base):
@@ -70,7 +73,7 @@ class TransparenciaOrgaoSiapeRaw(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     pagina_origem: Mapped[int] = mapped_column(Integer, nullable=False)
     payload_original_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    collected_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    collected_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
 
 
 class TransparenciaOrgaoSiafi(Base):
@@ -82,12 +85,12 @@ class TransparenciaOrgaoSiafi(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     status_registro: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     elegivel_dashboard: Mapped[bool] = mapped_column(Boolean, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=utcnow,
+        onupdate=utcnow,
     )
 
 
@@ -100,12 +103,12 @@ class TransparenciaOrgaoSiape(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     status_registro: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     elegivel_dashboard: Mapped[bool] = mapped_column(Boolean, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=utcnow,
+        onupdate=utcnow,
     )
 
 
@@ -127,7 +130,7 @@ class FatoRepasseMunicipio(Base):
     municipio_codigo_ibge: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
     valor: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     quantidade_beneficiados: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
 
 class TransparenciaCargaJob(Base):
     __tablename__ = "transparencia_carga_job"
@@ -147,12 +150,12 @@ class TransparenciaCargaJob(Base):
     running_items: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     success_items: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     failed_items: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=utcnow,
+        onupdate=utcnow,
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -194,12 +197,12 @@ class TransparenciaCargaJobItem(Base):
     records_received: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     inserted: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     updated: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=utcnow,
+        onupdate=utcnow,
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -216,7 +219,7 @@ class DimPesquisaIBGE(Base):
     categoria: Mapped[str] = mapped_column(String(100), nullable=True)
     periodicidade_divulgacao: Mapped[str] = mapped_column(String(50), nullable=True)
     tags_tematicas: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
-    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow, onupdate=utcnow)
     periodos: Mapped[list["DimPesquisaPeriodo"]] = relationship(
         "DimPesquisaPeriodo",
         back_populates="pesquisa",
@@ -242,7 +245,7 @@ class DimPesquisaPeriodo(Base):
     mes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     nome_ocorrencia: Mapped[str] = mapped_column(String(200), nullable=True)
     status_processamento: Mapped[str] = mapped_column(String(30), nullable=False, default="pending")
-    criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     
     pesquisa: Mapped[DimPesquisaIBGE] = relationship("DimPesquisaIBGE", back_populates="periodos")
 
@@ -262,7 +265,7 @@ class FatoDemografia(Base):
     ano: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     variavel_codigo: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     valor_estatistico: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
 
 
 class DimSiconfiEnte(Base):
@@ -278,5 +281,5 @@ class DimSiconfiEnte(Base):
     exercicio: Mapped[int] = mapped_column(Integer, nullable=False)
     populacao: Mapped[int] = mapped_column(Integer, nullable=True)
     cnpj: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
 

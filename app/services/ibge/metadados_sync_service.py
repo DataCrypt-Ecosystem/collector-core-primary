@@ -35,7 +35,7 @@ async def sync_metadados_pesquisas(db: Session) -> dict:
         for item in ativas
     ])
     
-    from datetime import datetime
+    from datetime import timezone, datetime
     
     stmt = stmt.on_conflict_do_update(
         index_elements=["codigo"],
@@ -45,7 +45,7 @@ async def sync_metadados_pesquisas(db: Session) -> dict:
             "categoria": stmt.excluded.categoria,
             "periodicidade_divulgacao": stmt.excluded.periodicidade_divulgacao,
             "tags_tematicas": stmt.excluded.tags_tematicas,
-            "atualizado_em": datetime.utcnow()
+            "atualizado_em": datetime.now(timezone.utc)
         }
     )
     

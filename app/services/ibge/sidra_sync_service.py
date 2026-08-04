@@ -49,7 +49,7 @@ def transform_sidra_data(df: pl.DataFrame):
         pl.col("V").alias("valor_estatistico")
     ])
     
-    from datetime import datetime
+    from datetime import timezone, datetime
     
     # Cast dos tipos
     df_clean = df_clean.with_columns([
@@ -60,7 +60,7 @@ def transform_sidra_data(df: pl.DataFrame):
         pl.col("valor_estatistico")
           .str.replace_all(r"[^0-9\.]", "", literal=False)
           .cast(pl.Float64, strict=False),
-        pl.lit(datetime.utcnow()).alias("created_at")
+        pl.lit(datetime.now(timezone.utc)).alias("created_at")
     ])
     
     # Drop rows that failed to parse into valid float values

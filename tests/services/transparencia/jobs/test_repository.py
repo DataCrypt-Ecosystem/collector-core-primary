@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import timezone, datetime, timezone
 import pytest
 from app.models import TransparenciaCargaJob, TransparenciaCargaJobItem
 from app.services.transparencia.jobs.definitions import (

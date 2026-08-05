@@ -17,7 +17,7 @@ class TransparenciaOrgaoSiafiRaw(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     pagina_origem: Mapped[int] = mapped_column(Integer, nullable=False)
     payload_original_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    collected_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
 
 class TransparenciaOrgaoSiapeRaw(Base):
     __tablename__ = "transparencia_orgao_siape_raw"
@@ -28,7 +28,7 @@ class TransparenciaOrgaoSiapeRaw(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     pagina_origem: Mapped[int] = mapped_column(Integer, nullable=False)
     payload_original_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    collected_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
 
 class TransparenciaOrgaoSiafi(Base):
     __tablename__ = "transparencia_orgao_siafi"
@@ -39,9 +39,9 @@ class TransparenciaOrgaoSiafi(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     status_registro: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     elegivel_dashboard: Mapped[bool] = mapped_column(Boolean, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         default=utcnow,
         onupdate=utcnow,
@@ -56,9 +56,9 @@ class TransparenciaOrgaoSiape(Base):
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     status_registro: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     elegivel_dashboard: Mapped[bool] = mapped_column(Boolean, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         default=utcnow,
         onupdate=utcnow,
@@ -82,4 +82,4 @@ class FatoRepasseMunicipio(Base):
     municipio_codigo_ibge: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
     valor: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     quantidade_beneficiados: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)

@@ -142,3 +142,99 @@ class SiafiDespesaOrgaoComparativoItem(BaseModel):
 class SiafiDespesaOrgaoComparativoResponse(BaseModel):
     ano: int
     data: list[SiafiDespesaOrgaoComparativoItem]
+
+
+class SiafiCargaJobSeedRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    anos: list[int] = Field(min_length=1)
+    orgaos: list[str] | None = None
+    orgaos_superiores: list[str] | None = Field(default=None, alias="orgaosSuperiores")
+    job_code_prefix: str | None = Field(default=None, alias="jobCodePrefix", min_length=1, max_length=50)
+    descricao_prefix: str | None = Field(default=None, alias="descricaoPrefix", min_length=1, max_length=100)
+
+    @model_validator(mode="after")
+    def validate_filters(self):
+        self.anos = sorted(set(self.anos))
+        if any(ano < 2000 or ano > 2100 for ano in self.anos):
+            raise ValueError("anos deve conter valores entre 2000 e 2100")
+
+        has_orgaos = bool(self.orgaos)
+        has_orgaos_superiores = bool(self.orgaos_superiores)
+        if has_orgaos == has_orgaos_superiores:
+            raise ValueError("Informe orgaos ou orgaosSuperiores, mas nao ambos")
+
+        if self.orgaos is not None:
+            self.orgaos = sorted({str(value).strip() for value in self.orgaos if str(value).strip()})
+            if not self.orgaos:
+                raise ValueError("orgaos nao pode ser vazio")
+
+        if self.orgaos_superiores is not None:
+            self.orgaos_superiores = sorted(
+                {str(value).strip() for value in self.orgaos_superiores if str(value).strip()}
+            )
+            if not self.orgaos_superiores:
+                raise ValueError("orgaosSuperiores nao pode ser vazio")
+
+        return self
+
+
+class SiafiCargaJobResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_code: str
+    descricao: str
+    status: str
+    metadata_json: dict
+    total_items: int
+    pending_items: int
+    running_items: int
+    success_items: int
+    failed_items: int
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
+class SiafiCargaJobListResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    items: list[SiafiCargaJobResponse]
+
+
+class SiafiCargaJobSeedResponse(BaseModel):
+    created_count: int
+    existing_count: int
+    jobs: list[SiafiCargaJobResponse]
+
+
+class SiafiCargaJobItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_id: int
+    ano: int
+    filter_type: str
+    filter_value: str
+    status: str
+    attempts: int
+    last_error: str | None
+    pages_collected: int
+    records_received: int
+    raw_inserted: int
+    facts_inserted: int
+    facts_updated: int
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
+class SiafiCargaJobItemListResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    items: list[SiafiCargaJobItemResponse]

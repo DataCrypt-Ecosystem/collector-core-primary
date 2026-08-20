@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class SiapeOrgaoCollectRequest(BaseModel):
@@ -184,3 +184,102 @@ class SiapeServidorOrgaoKpisResponse(BaseModel):
     codigo_orgao_superior_exercicio: str | None = None
     nome_orgao_superior_exercicio: str | None = None
     data: SiapeServidorOrgaoKpisData
+
+
+class SiapeCargaJobSeedRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    orgaos_exercicio: list[str] | None = Field(default=None, alias="orgaosExercicio")
+    orgaos_lotacao: list[str] | None = Field(default=None, alias="orgaosLotacao")
+    tipo_servidor: int | None = Field(default=None, alias="tipoServidor", ge=1, le=2)
+    tipo_vinculo: int | None = Field(default=None, alias="tipoVinculo", ge=1, le=4)
+    licenca: int | None = Field(default=None, ge=0, le=1)
+    job_code_prefix: str | None = Field(default=None, alias="jobCodePrefix", min_length=1, max_length=50)
+    descricao_prefix: str | None = Field(default=None, alias="descricaoPrefix", min_length=1, max_length=100)
+
+    @staticmethod
+    def _normalize_codes(values: list[str] | None) -> list[str] | None:
+        if values is None:
+            return None
+        normalized = sorted({str(value).strip() for value in values if str(value).strip()})
+        return normalized or None
+
+    @property
+    def filter_type(self) -> str:
+        return "orgao_exercicio" if self.orgaos_exercicio else "orgao_lotacao"
+
+    @property
+    def filter_values(self) -> list[str]:
+        return self.orgaos_exercicio or self.orgaos_lotacao or []
+
+    @model_validator(mode="after")
+    def validate_filters(self):
+        self.orgaos_exercicio = self._normalize_codes(self.orgaos_exercicio)
+        self.orgaos_lotacao = self._normalize_codes(self.orgaos_lotacao)
+
+        has_orgaos_exercicio = bool(self.orgaos_exercicio)
+        has_orgaos_lotacao = bool(self.orgaos_lotacao)
+        if has_orgaos_exercicio == has_orgaos_lotacao:
+            raise ValueError("Informe orgaosExercicio ou orgaosLotacao, mas nao ambos")
+
+        return self
+
+
+class SiapeCargaJobResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_code: str
+    descricao: str
+    status: str
+    metadata_json: dict
+    total_items: int
+    pending_items: int
+    running_items: int
+    success_items: int
+    failed_items: int
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
+class SiapeCargaJobListResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    items: list[SiapeCargaJobResponse]
+
+
+class SiapeCargaJobSeedResponse(BaseModel):
+    created_count: int
+    existing_count: int
+    jobs: list[SiapeCargaJobResponse]
+
+
+class SiapeCargaJobItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_id: int
+    filter_type: str
+    filter_value: str
+    status: str
+    attempts: int
+    last_error: str | None
+    pages_collected: int
+    records_received: int
+    raw_inserted: int
+    facts_inserted: int
+    facts_updated: int
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
+class SiapeCargaJobItemListResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    items: list[SiapeCargaJobItemResponse]

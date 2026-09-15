@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import models
 from app.api.transparencia import router as transparencia_router
 from app.api.routes.ibge import router as ibge_router
+from app.api.routes.transparencia_siafi import router as transparencia_siafi_router
+from app.api.routes.transparencia_siape import router as transparencia_siape_router
 from app.database import Base, engine
 from app.services.startup_sync import start_startup_sync
 from app.services.transparencia.jobs.worker import start_jobs_worker, stop_jobs_worker
@@ -24,6 +26,22 @@ def init_db():
         conn.commit()
 
     Base.metadata.create_all(engine)
+
+    with engine.connect() as conn:
+        conn.execute(
+            text(
+                "ALTER TABLE datacrypt.transparencia_orgao_siafi "
+                "ADD COLUMN IF NOT EXISTS categoria_poder VARCHAR(30) "
+                "NOT NULL DEFAULT 'pendente'"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS ix_transparencia_orgao_siafi_categoria_poder "
+                "ON datacrypt.transparencia_orgao_siafi (categoria_poder)"
+            )
+        )
+        conn.commit()
 
 
 @asynccontextmanager
@@ -76,5 +94,7 @@ from app.api.routes.siconfi import router as siconfi_router
 
 app.include_router(ibge_router, prefix="/api/v1")
 app.include_router(transparencia_router, prefix="/api/v1")
+app.include_router(transparencia_siafi_router, prefix="/api/v1")
+app.include_router(transparencia_siape_router, prefix="/api/v1")
 app.include_router(siconfi_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1/admin")

@@ -27,6 +27,22 @@ def init_db():
 
     Base.metadata.create_all(engine)
 
+    with engine.connect() as conn:
+        conn.execute(
+            text(
+                "ALTER TABLE datacrypt.transparencia_orgao_siafi "
+                "ADD COLUMN IF NOT EXISTS categoria_poder VARCHAR(30) "
+                "NOT NULL DEFAULT 'pendente'"
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS ix_transparencia_orgao_siafi_categoria_poder "
+                "ON datacrypt.transparencia_orgao_siafi (categoria_poder)"
+            )
+        )
+        conn.commit()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

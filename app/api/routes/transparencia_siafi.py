@@ -193,6 +193,7 @@ def get_orgaos(
     descricao: str | None = Query(default=None, min_length=1),
     status_registro: str | None = Query(default=None, min_length=1),
     elegivel_dashboard: bool | None = Query(default=None),
+    categoria_poder: str | None = Query(default=None, alias="categoriaPoder", min_length=1),
     db: Session = Depends(get_db),
 ):
     total, items = list_siafi_orgaos(
@@ -203,6 +204,7 @@ def get_orgaos(
         descricao=descricao,
         status_registro=status_registro,
         elegivel_dashboard=elegivel_dashboard,
+        categoria_poder=categoria_poder,
     )
     return SiafiOrgaoListResponse(
         total=total,

@@ -26,6 +26,7 @@ class SiafiOrgaoResponse(BaseModel):
     codigo: str
     descricao: str
     status_registro: str
+    categoria_poder: str
     elegivel_dashboard: bool
     created_at: datetime
     updated_at: datetime

@@ -29,6 +29,7 @@ def list_siafi_orgaos(
     descricao: str | None = None,
     status_registro: str | None = None,
     elegivel_dashboard: bool | None = None,
+    categoria_poder: str | None = None,
 ):
     return _list_orgaos_siafi(
         db,
@@ -38,6 +39,7 @@ def list_siafi_orgaos(
         descricao=descricao,
         status_registro=status_registro,
         elegivel_dashboard=elegivel_dashboard,
+        categoria_poder=categoria_poder,
     )
 
 

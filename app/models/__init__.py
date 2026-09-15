@@ -8,6 +8,18 @@ from .transparencia import (
     TransparenciaOrgaoSiape,
     FatoRepasseMunicipio,
 )
+from .transparencia_siafi import (
+    TransparenciaSiafiDespesaOrgaoRaw,
+    FatoSiafiDespesaOrgaoAnual,
+    TransparenciaSiafiCargaJob,
+    TransparenciaSiafiCargaJobItem,
+)
+from .transparencia_siape import (
+    TransparenciaSiapeServidorOrgaoRaw,
+    FatoSiapeServidorOrgao,
+    TransparenciaSiapeCargaJob,
+    TransparenciaSiapeCargaJobItem,
+)
 from .jobs import TransparenciaCargaJob, TransparenciaCargaJobItem
 from .ibge import DimPesquisaIBGE, DimPesquisaPeriodo, FatoDemografia
 from .siconfi import DimSiconfiEnte
@@ -22,6 +34,14 @@ __all__ = [
     "TransparenciaOrgaoSiafi",
     "TransparenciaOrgaoSiape",
     "FatoRepasseMunicipio",
+    "TransparenciaSiafiDespesaOrgaoRaw",
+    "FatoSiafiDespesaOrgaoAnual",
+    "TransparenciaSiafiCargaJob",
+    "TransparenciaSiafiCargaJobItem",
+    "TransparenciaSiapeServidorOrgaoRaw",
+    "FatoSiapeServidorOrgao",
+    "TransparenciaSiapeCargaJob",
+    "TransparenciaSiapeCargaJobItem",
     "TransparenciaCargaJob",
     "TransparenciaCargaJobItem",
     "DimPesquisaIBGE",

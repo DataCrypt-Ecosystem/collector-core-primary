@@ -18,7 +18,7 @@ class DimPesquisaIBGE(Base):
     categoria: Mapped[str] = mapped_column(String(100), nullable=True)
     periodicidade_divulgacao: Mapped[str] = mapped_column(String(50), nullable=True)
     tags_tematicas: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
-    atualizado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow, onupdate=utcnow)
+    atualizado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
     periodos: Mapped[list["DimPesquisaPeriodo"]] = relationship(
         "DimPesquisaPeriodo",
         back_populates="pesquisa",
@@ -43,7 +43,7 @@ class DimPesquisaPeriodo(Base):
     mes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     nome_ocorrencia: Mapped[str] = mapped_column(String(200), nullable=True)
     status_processamento: Mapped[str] = mapped_column(String(30), nullable=False, default="pending")
-    criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
     
     pesquisa: Mapped[DimPesquisaIBGE] = relationship("DimPesquisaIBGE", back_populates="periodos")
 
@@ -62,4 +62,4 @@ class FatoDemografia(Base):
     ano: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     variavel_codigo: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     valor_estatistico: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)

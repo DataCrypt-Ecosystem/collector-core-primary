@@ -19,4 +19,4 @@ class DimSiconfiEnte(Base):
     exercicio: Mapped[int] = mapped_column(Integer, nullable=False)
     populacao: Mapped[int] = mapped_column(Integer, nullable=True)
     cnpj: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)

@@ -38,6 +38,7 @@ class TransparenciaOrgaoSiafi(Base):
     codigo: Mapped[str] = mapped_column(String(20), nullable=False, unique=True, index=True)
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     status_registro: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    categoria_poder: Mapped[str] = mapped_column(String(30), nullable=False, index=True, default="pendente")
     elegivel_dashboard: Mapped[bool] = mapped_column(Boolean, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(

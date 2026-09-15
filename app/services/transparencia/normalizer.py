@@ -1,4 +1,8 @@
-from app.services.transparencia.filters import classify_registro, is_dashboard_eligible
+from app.services.transparencia.filters import (
+    classify_categoria_poder,
+    classify_registro,
+    is_dashboard_eligible,
+)
 
 
 def normalize_raw_record(item: dict, pagina_origem: int) -> dict:
@@ -24,3 +28,9 @@ def normalize_clean_record(item: dict) -> dict:
         "status_registro": status_registro,
         "elegivel_dashboard": is_dashboard_eligible(status_registro),
     }
+
+
+def normalize_siafi_clean_record(item: dict) -> dict:
+    row = normalize_clean_record(item)
+    row["categoria_poder"] = classify_categoria_poder(row["descricao"])
+    return row

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -11,7 +12,13 @@ from app.models import (
     TransparenciaOrgaoSiapeRaw,
 )
 from app.services.transparencia.client import TransparenciaClient
-from app.services.transparencia.normalizer import normalize_clean_record, normalize_raw_record
+from app.services.transparencia.normalizer import (
+    normalize_raw_record,
+    normalize_siafi_clean_record,
+    normalize_clean_record,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -160,7 +167,13 @@ async def _collect_orgaos(
                     latest_by_codigo=latest_raw_by_codigo,
                 )
 
-                clean_rows = [normalize_clean_record(item) for item in records]
+                clean_normalizer = (
+                    normalize_siafi_clean_record
+                    if spec.tipo_orgao == "siafi"
+                    else normalize_clean_record
+                )
+                clean_rows = [clean_normalizer(item) for item in records]
+                known_clean_codes = set(clean_by_codigo)
                 inserted, updated = _upsert_clean_rows(
                     db,
                     spec.clean_model,
@@ -169,6 +182,20 @@ async def _collect_orgaos(
                 )
                 summary["clean_inserted"] += inserted
                 summary["clean_updated"] += updated
+
+                if spec.tipo_orgao == "siafi":
+                    logged_codes: set[str] = set()
+                    for row in clean_rows:
+                        codigo = row["codigo"]
+                        if codigo in known_clean_codes or codigo in logged_codes:
+                            continue
+                        logger.info(
+                            "Novo orgao SIAFI encontrado: codigo=%s descricao=%s categoria_poder=%s",
+                            codigo,
+                            row["descricao"],
+                            row["categoria_poder"],
+                        )
+                        logged_codes.add(codigo)
 
         db.commit()
     except Exception:
@@ -236,6 +263,7 @@ def _list_orgaos(
     descricao: str | None = None,
     status_registro: str | None = None,
     elegivel_dashboard: bool | None = None,
+    categoria_poder: str | None = None,
 ):
     query = db.query(model)
 
@@ -251,6 +279,9 @@ def _list_orgaos(
     if elegivel_dashboard is not None:
         query = query.filter(model.elegivel_dashboard == elegivel_dashboard)
 
+    if categoria_poder is not None and hasattr(model, "categoria_poder"):
+        query = query.filter(model.categoria_poder == categoria_poder)
+
     total = query.count()
     items = query.order_by(model.codigo).offset(offset).limit(limit).all()
 
@@ -265,6 +296,7 @@ def list_orgaos_siafi(
     descricao: str | None = None,
     status_registro: str | None = None,
     elegivel_dashboard: bool | None = None,
+    categoria_poder: str | None = None,
 ):
     return _list_orgaos(
         db,
@@ -275,6 +307,7 @@ def list_orgaos_siafi(
         descricao=descricao,
         status_registro=status_registro,
         elegivel_dashboard=elegivel_dashboard,
+        categoria_poder=categoria_poder,
     )
 
 

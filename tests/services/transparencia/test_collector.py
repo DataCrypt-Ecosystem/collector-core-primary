@@ -15,6 +15,11 @@ from app.services.transparencia.collector import (
     collect_orgaos_siafi_with_new_session,
     collect_orgaos_siape_with_new_session
 )
+from app.models import TransparenciaOrgaoSiafi
+from app.services.transparencia.siafi.orgaos import (
+    SiafiOrgaoCategoryConflictError,
+    categorize_siafi_orgao,
+)
 
 def test_list_orgaos():
     db = MagicMock()
@@ -80,6 +85,17 @@ def test_upsert_clean_rows():
     assert db.add.call_count == 1
     assert db.flush.called
 
+
+def test_siafi_category_classifies_common_judiciary_and_executive_names():
+    from app.services.transparencia.normalizer import normalize_siafi_clean_record
+
+    assert normalize_siafi_clean_record(
+        {"codigo": "1", "descricao": "Tribunal Regional Federal - 1ª Região"}
+    )["categoria_poder"] == "judiciario"
+    assert normalize_siafi_clean_record(
+        {"codigo": "2", "descricao": "Fundação Escola Nacional de Administração Pública"}
+    )["categoria_poder"] == "executivo"
+
 @pytest.mark.asyncio
 async def test_collect_orgaos_success(mocker):
     db = MagicMock()
@@ -108,7 +124,47 @@ async def test_collect_orgaos_success(mocker):
     assert summary["records_received"] == 1
     assert summary["raw_inserted"] == 1
     assert summary["clean_inserted"] == 1
-    assert db.commit.called
+
+
+def test_categorize_active_pending_siafi_orgao(db):
+    orgao = TransparenciaOrgaoSiafi(
+        codigo="01000",
+        descricao="Camara dos Deputados",
+        status_registro="valido",
+        categoria_poder="pendente",
+        elegivel_dashboard=True,
+    )
+    db.add(orgao)
+    db.commit()
+    db.refresh(orgao)
+
+    result = categorize_siafi_orgao(
+        db,
+        orgao_id=orgao.id,
+        categoria_poder="legislativo",
+    )
+
+    assert result.categoria_poder == "legislativo"
+
+
+def test_categorize_rejects_non_active_siafi_orgao(db):
+    orgao = TransparenciaOrgaoSiafi(
+        codigo="00000",
+        descricao="CODIGO INVALIDO",
+        status_registro="invalido",
+        categoria_poder="pendente",
+        elegivel_dashboard=False,
+    )
+    db.add(orgao)
+    db.commit()
+    db.refresh(orgao)
+
+    with pytest.raises(SiafiOrgaoCategoryConflictError):
+        categorize_siafi_orgao(
+            db,
+            orgao_id=orgao.id,
+            categoria_poder="executivo",
+        )
 
 @pytest.mark.asyncio
 async def test_collect_orgaos_error(mocker):

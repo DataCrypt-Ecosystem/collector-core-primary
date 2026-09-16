@@ -19,6 +19,20 @@ class SiafiOrgaoCollectResponse(BaseModel):
     clean_updated: int
 
 
+class SiafiCategoriaPoderUpdateRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    categoria_poder: Literal[
+        "executivo",
+        "legislativo",
+        "judiciario",
+        "ministerio_publico",
+        "controle_externo",
+        "defensoria_publica",
+        "advocacia_publica",
+    ] = Field(alias="categoriaPoder")
+
+
 class SiafiOrgaoResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -21,7 +21,14 @@ from .jobs import (
     run_siafi_job,
     seed_siafi_jobs,
 )
-from .orgaos import collect_siafi_orgaos, get_siafi_orgao, list_siafi_orgaos
+from .orgaos import (
+    SiafiOrgaoCategoryConflictError,
+    SiafiOrgaoNotFoundError,
+    categorize_siafi_orgao,
+    collect_siafi_orgaos,
+    get_siafi_orgao,
+    list_siafi_orgaos,
+)
 
 __all__ = [
     "get_siafi_agregacao",
@@ -38,6 +45,9 @@ __all__ = [
     "list_siafi_jobs",
     "list_siafi_despesas_por_orgao",
     "collect_siafi_orgaos",
+    "SiafiOrgaoCategoryConflictError",
+    "SiafiOrgaoNotFoundError",
+    "categorize_siafi_orgao",
     "get_siafi_orgao",
     "list_siafi_orgaos",
     "queue_siafi_job_run",

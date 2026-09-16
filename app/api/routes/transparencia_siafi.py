@@ -18,12 +18,16 @@ from app.schemas.transparencia_siafi import (
     SiafiDespesaOrgaoSerieHistoricaResponse,
     SiafiOrgaoCollectRequest,
     SiafiOrgaoCollectResponse,
+    SiafiCategoriaPoderUpdateRequest,
     SiafiOrgaoListResponse,
     SiafiOrgaoResponse,
 )
 from app.services.transparencia.siafi import (
     SiafiCargaJobConflictError,
     SiafiCargaJobNotFoundError,
+    SiafiOrgaoCategoryConflictError,
+    SiafiOrgaoNotFoundError,
+    categorize_siafi_orgao,
     collect_siafi_despesas_por_orgao,
     collect_siafi_orgaos,
     delete_siafi_job,
@@ -223,6 +227,24 @@ def get_orgao(
     if item is None:
         raise HTTPException(status_code=404, detail="Orgao SIAFI not found")
     return item
+
+
+@router.patch("/orgaos/{id}/categoria", response_model=SiafiOrgaoResponse)
+def update_orgao_categoria(
+    id: int,
+    payload: SiafiCategoriaPoderUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        return categorize_siafi_orgao(
+            db,
+            orgao_id=id,
+            categoria_poder=payload.categoria_poder,
+        )
+    except SiafiOrgaoNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SiafiOrgaoCategoryConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.post("/despesas/por-orgao/collect", response_model=SiafiDespesaOrgaoCollectResponse)
